@@ -18,6 +18,7 @@ require_once dirname(__FILE__) . '/ldap.php';
 require_once __DIR__ . '/src/LdapUri.php';
 require_once __DIR__ . '/src/Exception/Error.php';
 require_once __DIR__ . '/src/Exception/InvalidLdapUri.php';
+require_once __DIR__ . '/src/sshaFunction.php';
 
 function authLdap_debug($message)
 {
@@ -628,13 +629,13 @@ function authLdap_groupmap($username, $dn)
  */
 function authLdap_show_password_fields($return, $user)
 {
-//    if (! $user) {
-//        return true;
-//    }
+    if (! $user) {
+        return true;
+    }
 
-//    if (get_user_meta($user->ID, 'authLDAP')) {
-//        return false;
-//    }
+    if (get_user_meta($user->ID, 'authLDAP')) {
+        return false;
+    }
 
     return $return;
 }
@@ -897,7 +898,8 @@ function authLdap_passwordReset($user, $password) {
 
             // Overwrite the user's password
             $ldap_entry = array();
-            $ldap_entry['userPassword'] = '{MD5}' . base64_encode(pack('H*',md5($password)));
+            //$ldap_entry['userPassword'] = '{MD5}' . base64_encode(pack('H*',md5($password)));
+            $ldap_entry['userPassword'] = ssha_encode($password);
 
             $added = ldap_modify($ldap_conn, "cn=" . $user->user_login . ',' . $ldap_orgunit, $ldap_entry);
             if (!$added) {
