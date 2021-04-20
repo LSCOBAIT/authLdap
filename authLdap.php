@@ -629,13 +629,13 @@ function authLdap_groupmap($username, $dn)
  */
 function authLdap_show_password_fields($return, $user)
 {
-    if (! $user) {
-        return true;
-    }
+//    if (! $user) {
+//        return true;
+//    }
 
-    if (get_user_meta($user->ID, 'authLDAP')) {
-        return false;
-    }
+//    if (get_user_meta($user->ID, 'authLDAP')) {
+//        return false;
+//    }
 
     return $return;
 }
