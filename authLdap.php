@@ -867,8 +867,65 @@ function authLdap_send_change_email($result, $user, $newUserData)
     return $result;
 }
 
+function authLdap_passwordReset($user, $password) {
+
+    $ldap_rdn = 'cn=admin,dc=company,dc=com';
+    $ldap_pw = 'adminpw';
+    $ldap_orgunit = 'ou=people,dc=company,dc=com';
+
+    $ldap_conn = ldap_connect("ldap://id.company.com", 389);
+    if ($ldap_conn) {
+        ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $ldap_bind = ldap_bind($ldap_conn, $ldap_rdn, $ldap_pw);
+        if ($ldap_bind) {
+
+            // Check to see if the user exists
+            $searched = ldap_search($ldap_conn, $ldap_orgunit, 'cn=' . $user->user_login, array('cn'));
+            if (!$searched) {
+                authLdap_debug("User does not exist: " . $user . " in LDAP server");
+                ldap_close($ldap_conn);
+                return null;
+            }
+
+            $entries = ldap_get_entries($ldap_conn, $searched);
+            if ($entries['count'] != 1) {
+                authLdap_debug("User does not exist, or more than 1 user with this login: " . $user . " in LDAP server");
+                ldap_close($ldap_conn);
+                return null;
+            }
+
+
+            // Overwrite the user's password
+            $ldap_entry = array();
+            $ldap_entry['userPassword'] = '{MD5}' . base64_encode(pack('H*',md5($password)));
+
+            $added = ldap_modify($ldap_conn, "cn=" . $user->user_login . ',' . $ldap_orgunit, $ldap_entry);
+            if (!$added) {
+                authLdap_debug("Cannot reset password for user " . $user->user_login . " in LDAP server");
+                ldap_close($ldap_conn);
+                return null;
+            }
+
+        } else {
+            authLdap_debug("Cannot bind to LDAP server with admin account");
+            ldap_close($ldap_conn);
+            return null;
+        }
+
+    } else {
+        authLdap_debug("Cannot connect to LDAP server with admin account");
+        ldap_close($ldap_conn);
+        return null;
+    }
+
+    ldap_close($ldap_conn);
+    return $data;
+}
+
+
 $hook = is_multisite() ? 'network_' : '';
 add_action($hook . 'admin_menu', 'authLdap_addmenu');
+add_action('password_reset', 'authLdap_passwordReset', 10, 2);
 add_filter('show_password_fields', 'authLdap_show_password_fields', 10, 2);
 add_filter('allow_password_reset', 'authLdap_allow_password_reset', 10, 2);
 add_filter('authenticate', 'authLdap_login', 10, 3);
