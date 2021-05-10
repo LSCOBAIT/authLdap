@@ -1,3 +1,7 @@
+## Important for LSC
+
+read the section for WP Core hack
+
 # authLDAP
 
 [![Join the chat at https://gitter.im/heiglandreas/authLdap](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/heiglandreas/authLdap?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -93,3 +97,7 @@ wonderfull plugin of Alistair Young from http://www.weblogs.uhi.ac.uk/sm00ay/?p=
     where <a href="https://github.com/wtfiwtz">wtfiwtz</a> shows how to implement that feature.
     </dd>
     </dl>
+
+## WP Core hack
+
+discovered may need to change the pluggable function of wp_set_password in pluggable.php, since password_reset in user.php is not hooked anywhere
